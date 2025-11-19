@@ -31,7 +31,7 @@ func checkEndpoint(name string, url string, endpointMap EndpointMap) {
 	req.Header.Add("User-Agent", endpointMap.UserAgent)
 
 	for {
-		time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
+		time.Sleep(time.Duration(rand.Intn(100)) * time.Second)
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
