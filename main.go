@@ -15,7 +15,8 @@ import (
 var homeTemplate string
 
 var endpoints = map[string]string{
-	"Downdetector API": "https://downdetectorapi.com/v2/ping",
+	"Downdetector Website": "https://downdetector.com",
+	"Downdetector API":     "https://downdetectorapi.com/v2/ping",
 }
 
 func main() {
