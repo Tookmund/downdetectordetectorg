@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Down Detector Detectorg</title>
+	</head>
+	<body>
+		<div align="center">
+			<h1>Is Down Detector Down Right Now?</h1>
+			<ul>
+			{{ $timestampFormat := .TimestampFormat }}
+			{{ range $key, $value := .Map }}
+			<li>
+				<p>{{ $key }}: {{if $value.Status }} ✅ {{ else }} ❌ {{ end }}</p>
+				{{ if $value.LastCheck  }}
+				<p>Last Checked: {{ $value.LastCheck.Format $timestampFormat }}</p>
+				{{ end }}
+				{{ if $value.LastUp  }}
+				<p>Last Up: {{ $value.LastUp.Format $timestampFormat }}</p>
+				{{ end }}
+			</li>
+			{{end}}
+			</ul>
+		</div>
+	</body>
+</html>
