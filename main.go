@@ -5,10 +5,13 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
 	_ "embed"
+
+	apachelog "github.com/lestrrat-go/apache-logformat/v2"
 )
 
 //go:embed template.html
@@ -17,6 +20,22 @@ var homeTemplate string
 var endpoints = map[string]string{
 	"Downdetector Website": "https://downdetector.com",
 	"Downdetector API":     "https://downdetectorapi.com/v2/ping",
+}
+
+type detectOrgHandler struct {
+	tmpl        *template.Template
+	endpointMap EndpointMap
+}
+
+func (doh detectOrgHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "text/html")
+	doh.endpointMap.Lock.RLock()
+	defer doh.endpointMap.Lock.RUnlock()
+	err := doh.tmpl.Execute(w, doh.endpointMap)
+	if err != nil {
+		fmt.Printf("template: %v\n", err)
+	}
 }
 
 func main() {
@@ -38,16 +57,13 @@ func main() {
 	for name, url := range endpoints {
 		go checkEndpoint(name, url, endpointMap)
 	}
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "text/html")
-		endpointMap.Lock.RLock()
-		defer endpointMap.Lock.RUnlock()
-		err := tmpl.Execute(w, endpointMap)
-		if err != nil {
-			fmt.Printf("template: %v\n", err)
-		}
-	})
+
+	handler := apachelog.CombinedLog.Wrap(detectOrgHandler{
+		tmpl:        tmpl,
+		endpointMap: endpointMap,
+	}, os.Stdout)
+
+	http.Handle("/", handler)
 
 	fmt.Println("Serving")
 	log.Fatal(http.ListenAndServe(":8080", nil))
