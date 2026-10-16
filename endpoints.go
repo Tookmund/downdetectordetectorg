@@ -57,15 +57,18 @@ func checkEndpoint(name string, url string, endpointMap EndpointMap) {
 
 		now := time.Now()
 		endpointStatus.LastCheck = &now
+		lus := "never"
 		if endpointStatus.Status {
 			endpointStatus.LastUp = &now
+			lus = now.Format(endpointMap.TimestampFormat)
 		}
 
-		fmt.Printf("\n%s:\nStatus: %v\nLastCheck: %v\nLastUp: %v\n",
+		fmt.Printf(
+			"\n%s: Status: %v; LastCheck: %v; LastUp: %v\n",
 			name,
 			endpointStatus.Status,
-			endpointStatus.LastCheck,
-			endpointStatus.LastUp,
+			endpointStatus.LastCheck.Format(endpointMap.TimestampFormat),
+			lus,
 		)
 
 		endpointMap.Lock.Lock()
